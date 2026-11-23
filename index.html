@@ -36,13 +36,35 @@
   ];
 
   const img = document.getElementById('obrazek');
-  let ostatni = -1;
+  const KLUCZ = 'obrazek-kolejka';
+
+  // Telefon pamięta, których obrazków jeszcze nie pokazał.
+  // Nowy obrazek jest pokazywany dopiero, gdy wszystkie były już widziane raz.
+  function wczytaj(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } }
+  function zapisz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+
+  function potasuj(lista) {
+    const a = lista.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
 
   function losuj() {
-    let i = Math.floor(Math.random() * OBRAZKI.length);
-    if (OBRAZKI.length > 1 && i === ostatni) i = (i + 1) % OBRAZKI.length;
-    ostatni = i;
-    img.src = OBRAZKI[i];
+    const ostatni = wczytaj('obrazek-ostatni')[0];
+    // Zostaw tylko obrazki, które nadal są na liście (gdyby jakiś usunięto).
+    let kolejka = wczytaj(KLUCZ).filter(o => OBRAZKI.includes(o));
+    if (kolejka.length === 0) {
+      kolejka = potasuj(OBRAZKI);
+      // Nowa runda nie zaczyna się od obrazka, który był przed chwilą.
+      if (kolejka.length > 1 && kolejka[0] === ostatni) kolejka.push(kolejka.shift());
+    }
+    const obrazek = kolejka.shift();
+    zapisz(KLUCZ, kolejka);
+    zapisz('obrazek-ostatni', [obrazek]);
+    img.src = obrazek;
   }
 
   document.getElementById('losuj').addEventListener('click', losuj);
