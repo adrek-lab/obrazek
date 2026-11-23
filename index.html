@@ -5,11 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Losowy Obrazek</title>
 <style>
-  :root {
-    --bg: #111; --fg: #f2f2f2; --accent: #f2f2f2; --accent-fg: #111;
-    --cookie: #e0a458; --paper: #fffaf0; --ink: #1d1d1d; --dim: #77705f;
-    color-scheme: dark;
-  }
+  :root { --bg: #111; --fg: #f2f2f2; --accent: #f2f2f2; --accent-fg: #111; color-scheme: dark; }
   html, body { height: 100%; margin: 0; }
   body {
     background: var(--bg); color: var(--fg);
@@ -19,78 +15,19 @@
              max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
     box-sizing: border-box;
   }
-  img { max-width: 100%; max-height: calc(100dvh - 120px); object-fit: contain; border-radius: 6px; display: block; }
-  .przyciski { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  img { max-width: 100%; max-height: calc(100dvh - 110px); object-fit: contain; border-radius: 6px; display: block; }
   button {
-    font: 600 16px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font: 600 16px inherit; font-family: inherit;
     background: var(--accent); color: var(--accent-fg);
-    border: 0; border-radius: 999px; padding: 12px 22px; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 8px;
+    border: 0; border-radius: 999px; padding: 12px 26px; cursor: pointer;
   }
-  button.ciastko { background: var(--cookie); color: #2a1a05; }
   button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
-  [hidden] { display: none !important; }
-
-  /* okno z wróżbą */
-  .tlo {
-    position: fixed; inset: 0; background: rgb(0 0 0 / .7);
-    display: flex; align-items: center; justify-content: center;
-    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
-             max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  }
-  .karta {
-    background: var(--paper); color: var(--ink);
-    width: min(100%, 480px); border-radius: 14px; padding: 20px;
-    box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;
-    animation: wjazd .35s cubic-bezier(.2, 1.4, .4, 1);
-  }
-  @keyframes wjazd { from { transform: scale(.6) rotate(-6deg); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .karta { animation: none; } }
-  .naglowek { display: flex; align-items: center; gap: 12px; }
-  .naglowek svg { flex: none; }
-  .naglowek h2 { margin: 0; font-size: 20px; }
-  .naglowek .nr { font: 500 13px ui-monospace, Menlo, Consolas, monospace; color: var(--dim); }
-  .log {
-    margin: 0; padding: 14px; border-radius: 8px; background: #f3ecd9;
-    font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace;
-    white-space: pre-wrap; overflow-wrap: anywhere;
-  }
-  .log .akcja { color: var(--dim); font-style: italic; }
-  .karta .przyciski button { background: var(--ink); color: var(--paper); }
-  .karta .przyciski button.drugi { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
 </style>
 </head>
 <body>
 <img id="obrazek" alt="Losowy obrazek">
-<div class="przyciski">
-  <button id="losuj" type="button">Losuj kolejny</button>
-  <button id="ciastko" class="ciastko" type="button">
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 14c0-6 5-10 10-10s10 4 10 10c-3-2-6-1-8 1-2-3-7-4-12-1z" fill="#2a1a05"/></svg>
-    Ciasteczko z wróżbą
-  </button>
-</div>
+<button id="losuj" type="button">Losuj kolejny</button>
 
-<div class="tlo" id="okno" hidden>
-  <div class="karta" role="dialog" aria-modal="true" aria-labelledby="tytul">
-    <div class="naglowek">
-      <svg width="54" height="40" viewBox="0 0 54 40" aria-hidden="true">
-        <path d="M3 30C3 14 14 4 27 4s24 10 24 26c-7-6-15-4-20 2C26 24 14 22 3 30z" fill="#e0a458" stroke="#7a4a12" stroke-width="2.5" stroke-linejoin="round"/>
-        <rect x="23" y="24" width="26" height="9" rx="1.5" fill="#fff" stroke="#7a4a12" stroke-width="2" transform="rotate(14 36 28)"/>
-      </svg>
-      <div>
-        <h2 id="tytul">Twoja wróżba</h2>
-        <div class="nr" id="numer"></div>
-      </div>
-    </div>
-    <pre class="log" id="log"></pre>
-    <div class="przyciski">
-      <button id="kolejne" type="button">Kolejne ciasteczko</button>
-      <button id="zamknij" class="drugi" type="button">Zamknij</button>
-    </div>
-  </div>
-</div>
-
-<script src="cytaty.js"></script>
 <script>
   // Aby dodać obrazek: wrzuć plik do folderu "obrazki" i dopisz jego nazwę poniżej.
   const OBRAZKI = [
@@ -108,6 +45,11 @@
     'obrazki/12.jpg',
   ];
 
+  const img = document.getElementById('obrazek');
+  const KLUCZ = 'obrazek-kolejka';
+
+  // Telefon pamięta, których obrazków jeszcze nie pokazał.
+  // Nowy obrazek jest pokazywany dopiero, gdy wszystkie były już widziane raz.
   function wczytaj(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } }
   function zapisz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 
@@ -120,68 +62,23 @@
     return a;
   }
 
-  // Telefon pamięta, czego jeszcze nie pokazał.
-  // Nic się nie powtarza, dopóki wszystko nie zostanie pokazane raz.
-  function nastepny(lista, klucz) {
-    const ostatni = wczytaj(klucz + '-ostatni')[0];
-    let kolejka = wczytaj(klucz).filter(o => lista.includes(o));
+  function losuj() {
+    const ostatni = wczytaj('obrazek-ostatni')[0];
+    // Zostaw tylko obrazki, które nadal są na liście (gdyby jakiś usunięto).
+    let kolejka = wczytaj(KLUCZ).filter(o => OBRAZKI.includes(o));
     if (kolejka.length === 0) {
-      kolejka = potasuj(lista);
+      kolejka = potasuj(OBRAZKI);
+      // Nowa runda nie zaczyna się od obrazka, który był przed chwilą.
       if (kolejka.length > 1 && kolejka[0] === ostatni) kolejka.push(kolejka.shift());
     }
-    const wynik = kolejka.shift();
-    zapisz(klucz, kolejka);
-    zapisz(klucz + '-ostatni', [wynik]);
-    return wynik;
+    const obrazek = kolejka.shift();
+    zapisz(KLUCZ, kolejka);
+    zapisz('obrazek-ostatni', [obrazek]);
+    img.src = obrazek;
   }
 
-  // Obrazki
-  const img = document.getElementById('obrazek');
-  function losuj() { img.src = nastepny(OBRAZKI, 'obrazek-kolejka'); }
   document.getElementById('losuj').addEventListener('click', losuj);
   losuj();
-
-  // Ciasteczko z wróżbą
-  const okno = document.getElementById('okno');
-  const log = document.getElementById('log');
-  const KOLORY = ['#b5179e', '#0077b6', '#2d6a4f', '#c1121f', '#7b2cbf', '#d35400', '#386641'];
-  const kolorNicka = n => KOLORY[[...n].reduce((s, c) => s + c.charCodeAt(0), 0) % KOLORY.length];
-
-  function wrozba() {
-    const nr = nastepny(CYTATY.map((_, i) => i), 'cytat-kolejka');
-    log.replaceChildren();
-    for (const linia of CYTATY[nr]) {
-      const wiersz = document.createElement('div');
-      const m = linia.match(/^<([^>]+)>\s?(.*)$/);
-      if (m) {
-        const nick = document.createElement('b');
-        nick.textContent = '<' + m[1] + '> ';
-        nick.style.color = kolorNicka(m[1]);
-        wiersz.append(nick, m[2]);
-      } else {
-        wiersz.className = 'akcja';
-        wiersz.textContent = linia;
-      }
-      log.append(wiersz);
-    }
-    const punkty = 50 + ((nr * 7919) % 900);
-    document.getElementById('numer').textContent = '#' + (1000 + nr * 137) + '  +' + punkty;
-  }
-
-  document.getElementById('ciastko').addEventListener('click', () => {
-    wrozba();
-    okno.hidden = false;
-    document.getElementById('kolejne').focus();
-  });
-  document.getElementById('kolejne').addEventListener('click', () => {
-    wrozba();
-    const k = okno.querySelector('.karta');
-    k.style.animation = 'none'; k.offsetWidth; k.style.animation = '';
-  });
-  const zamknij = () => { okno.hidden = true; document.getElementById('ciastko').focus(); };
-  document.getElementById('zamknij').addEventListener('click', zamknij);
-  okno.addEventListener('click', e => { if (e.target === okno) zamknij(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !okno.hidden) zamknij(); });
 </script>
 </body>
 </html>
